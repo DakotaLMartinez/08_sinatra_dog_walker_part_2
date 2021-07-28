@@ -9,3 +9,8 @@ task :console do
   Pry.start
 end
 
+desc "Start our server"
+task :server do
+  exec "rerun -b 'rackup config.ru'"
+end 
+

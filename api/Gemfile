@@ -11,10 +11,13 @@ gem 'require_all'
 gem 'sqlite3'
 
 gem 'thin'
-gem 'shotgun'
-gem 'pry'
 gem 'bcrypt'
-gem 'tux'
+
+group :development, :test do 
+  gem 'pry'
+  gem 'rerun'
+  gem 'tux'
+end
 
 group :test do
   gem 'rspec'
