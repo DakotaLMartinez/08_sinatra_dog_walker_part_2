@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Switch, Route } from 'react-router-dom';
 import DogsToolBar from './DogsToolBar';
 import DogsList from './DogsList';
@@ -7,6 +7,20 @@ import DogDetail from './DogDetail';
 
 function DogsContainer() {
   const [dogs, setDogs] = useState([]);
+
+  useEffect(() => {
+    async function fetchDogs() {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/dogs`, {
+        headers: { Accept: 'application/json' }
+      });
+
+      const parsedBody = await res.json()
+
+      setDogs(parsedBody)
+    }
+
+    fetchDogs()
+  }, []);
 
   return (
     <div className="w-4/5 mx-auto pt-12">

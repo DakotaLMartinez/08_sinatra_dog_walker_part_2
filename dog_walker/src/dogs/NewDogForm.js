@@ -1,13 +1,41 @@
 import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 
-function NewDogForm() {
+function NewDogForm({ dogs, setDogs }) {
+  const history = useHistory();
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [breed, setBreed] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/dogs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify({
+        dog: {
+          name,
+          age,
+          breed
+        }
+      })
+    });
+
+    const parsedBody = await res.json();
+    setDogs([...dogs, parsedBody]);
+    history.push('/dogs');
+  };
   return (
     <>
       <h1 className="text-3xl mb-3">New Dog</h1>
-      <form className="grid gap-4 text-2xl lg:text-lg lg:grid-cols-6 items-center">
+      <form
+        onSubmit={handleSubmit}
+        className="grid gap-4 text-2xl lg:text-lg lg:grid-cols-6 items-center"
+      >
         <div className="lg:col-span-5 lg:flex">
           <fieldset className="flex flex-grow mr-2 my-2">
             <label className="w-16" for="name">
