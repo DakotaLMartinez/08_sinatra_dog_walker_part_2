@@ -30,7 +30,7 @@ function DogsContainer() {
           <DogsList dogs={dogs} />
         </Route>
         <Route exact path="/dogs/new">
-          <NewDogForm />
+          <NewDogForm dogs={dogs} setDogs={setDogs} />
         </Route>
         <Route
           exact
