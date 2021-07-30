@@ -4,6 +4,7 @@ import DogsToolBar from './DogsToolBar';
 import DogsList from './DogsList';
 import NewDogForm from './NewDogForm';
 import DogDetail from './DogDetail';
+import DogEditForm from './DogEditForm';
 
 function DogsContainer() {
   const [dogs, setDogs] = useState([]);
@@ -14,12 +15,12 @@ function DogsContainer() {
         headers: { Accept: 'application/json' }
       });
 
-      const parsedBody = await res.json()
+      const parsedBody = await res.json();
 
-      setDogs(parsedBody)
+      setDogs(parsedBody);
     }
 
-    fetchDogs()
+    fetchDogs();
   }, []);
 
   return (
@@ -27,7 +28,7 @@ function DogsContainer() {
       <DogsToolBar />
       <Switch>
         <Route exact path="/dogs">
-          <DogsList dogs={dogs} />
+          <DogsList dogs={dogs} setDogs={setDogs} />
         </Route>
         <Route exact path="/dogs/new">
           <NewDogForm dogs={dogs} setDogs={setDogs} />
@@ -38,6 +39,17 @@ function DogsContainer() {
           render={({ match }) => (
             <DogDetail
               dog={dogs.find((dog) => dog.id === parseInt(match.params.id))}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dogs/:id/edit"
+          render={({ match }) => (
+            <DogEditForm
+              dogs={dogs}
+              dog={dogs.find((dog) => dog.id === parseInt(match.params.id))}
+              setDogs={setDogs}
             />
           )}
         />

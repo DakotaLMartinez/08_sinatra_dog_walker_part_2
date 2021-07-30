@@ -11,6 +11,18 @@ class DogsController < ApplicationController
     dog.to_json
   end
 
+  patch "/dogs/:id" do
+    dog = Dog.find(params[:id])
+    dog.update(dog_params)
+    dog.to_json
+  end
+
+  delete "/dogs/:id" do 
+    dog = Dog.find(params[:id])
+    dog.destroy
+    dog.to_json
+  end
+
   private 
 
   def dog_params
