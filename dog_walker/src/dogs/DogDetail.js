@@ -1,22 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPencilAlt, FaTrash, FaWalking, FaPoop } from 'react-icons/fa';
+import NewDogWalkForm from './NewDogWalkForm';
+import { FaPencilAlt, FaTrash, FaWalking, FaPoop, FaPlus } from 'react-icons/fa';
+
 
 function DogDetail({ dog = {}, dogs, setDogs }) {
   const { id, name, age, breed, image_url } = dog;
 
-  const [dog_walks, set_dog_walks] = useState([
-    {
-      time: "Friday, 7/30 2:00 PM",
-      number_two: false
-    },
-    {
-      time: "Thursday, 7/29 9:00 AM",
-      number_two: true
-    }
-  ]);
+  const [dogWalks, setDogWalks] = useState([]);
+  const [showNewDogWalkForm, setShowNewDogWalkForm] = useState(false);
 
-  const handleDelete = async (e) => {
+  const toggleShowNewDogWalkForm = () => {
+    setShowNewDogWalkForm(!showNewDogWalkForm)
+  }
+
+  const addDogWalk = (dogWalk) => {
+    setDogWalks([...dogWalks, dogWalk])
+    toggleShowNewDogWalkForm()
+  }
+
+  useEffect(() => {
+    async function fetchDogWalks() {
+      if (!id) return;
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/dogs/${id}`);
+      const { dog_walks } = await res.json();
+
+      setDogWalks(dog_walks);
+    }
+    fetchDogWalks();
+  }, [id]);
+
+  const handleDogDelete = async (e) => {
     e.preventDefault();
     const res = await fetch(`${process.env.REACT_APP_API_URL}/dogs/${id}`, {
       method: 'DELETE',
@@ -27,6 +41,42 @@ function DogDetail({ dog = {}, dogs, setDogs }) {
 
     setDogs(dogs.filter((dog) => dog.id !== parsedBody.id));
   };
+
+  const handlePooClick = async (dogWalkId) => {
+    const dogWalk = dogWalks.find((dw) => dw.id === dogWalkId);
+    togglePoo(dogWalk)
+    const res = await fetch(
+      `${process.env.REACT_APP_API_URL}/dog_walks/${dogWalkId}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          number_two: !dogWalk.number_two
+        })
+      }
+    );
+    // if something is wrong with the response, display an error to our users.
+  };
+
+  const togglePoo = (dw) => {
+    const updated_dogWalks = dogWalks.map((dogWalk) => {
+      if (dogWalk.id === parseInt(dw.id)) {
+        return { ...dogWalk, number_two: !dw.number_two };
+      } else {
+        return dogWalk;
+      }
+    });
+    setDogWalks(updated_dogWalks);
+  };
+
+  const handleDogWalkDelete = async (dogWalkId) => {
+    if (window.confirm("Are you sure you want to delete this dog walk?")) {
+      setDogWalks(dogWalks.filter(dogWalk => dogWalk.id !== dogWalkId))
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/dog_walks/${dogWalkId}`, {
+        method: 'DELETE'
+      });
+    }
+  }
 
   return (
     <div className="grid sm:grid-cols-3 gap-8">
@@ -49,7 +99,7 @@ function DogDetail({ dog = {}, dogs, setDogs }) {
               <FaPencilAlt size={20} />
             </Link>
             <a
-              onClick={handleDelete}
+              onClick={handleDogDelete}
               className="flex items-center mr-2"
               href={`/dogs/${id}`}
             >
@@ -59,22 +109,33 @@ function DogDetail({ dog = {}, dogs, setDogs }) {
         </div>
       </div>
       <div className="sm:col-span-2">
-        <h1 className="text-2xl">Walks</h1>
+        <h1 className="text-2xl flex items-center">Walks {!showNewDogWalkForm ? <FaPlus onClick={toggleShowNewDogWalkForm} className="ml-2" /> : null}</h1>
         <ul className="space-y-4">
-          {dog_walks.map((dog_walk) => (
+          {dogWalks.map((dogWalk) => (
             <li className="flex items-bottom justify-between border-b-2 py-2">
-              <span className="pb-1 pt-2 w-44">{dog_walk.time}</span>
+              <span className="pb-1 pt-2 w-52">{dogWalk.formatted_time}</span>
               <span className="flex items-center">
-                <FaPoop
-                  style={{ color: dog_walk.number_two ? '#000' : '#bbb' }}
-                  size={20}
-                />
+                <button onClick={() => handlePooClick(dogWalk.id)}>
+                  <FaPoop
+                    style={{ color: dogWalk.number_two ? '#000' : '#bbb' }}
+                    size={20}
+                  />
+                </button>
               </span>
               <span className="flex items-center">
-                <FaTrash size={20} />
+                <button onClick={() => handleDogWalkDelete(dogWalk.id)}><FaTrash size={20} /></button>
               </span>
             </li>
           ))}
+          {showNewDogWalkForm && (
+            <li>
+              <NewDogWalkForm
+                dog={dog}
+                toggleShowNewDogWalkForm={toggleShowNewDogWalkForm}
+                addDogWalk={addDogWalk}
+              />
+            </li>
+          )}
         </ul>
       </div>
     </div>
